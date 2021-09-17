@@ -17,3 +17,11 @@ class TestDatasets(object):
     def test_china_provincial_level_administrative_region(self):
         data = geocoding.datasets.china_provincial_level_administrative_region()
         print(data)
+
+    def test_china_prefecture_level_administrative_region(self):
+        data = geocoding.datasets.china_prefecture_level_administrative_region()
+        print(data)
+
+    def test_county_provincial_level_administrative_region(self):
+        data = geocoding.datasets.china_county_level_administrative_region()
+        print(data)
