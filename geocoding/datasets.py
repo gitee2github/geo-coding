@@ -22,17 +22,7 @@ class DataSets(object):
 
     def china_provincial_level_administrative_region(self):
         """
-        There are 23 provinces, 5 autonomous regions, 4 municipalities,
-        and 2 special administrative regions,
-        totaling 34 provincial-level administrative regions.
-
-        The number does not necessarily correspond exactly.
-        The data source is GADM: Global Administrative Divisions Database.
-        The data on China’s borders provided by it may not conform to China’s
-        territorial claims, and the data on provincial, city, and district boundaries
-        may not necessarily be the latest version.
-        Care must be taken when publishing images that
-        use this type of data in official journals.
+        Provincial-level administrative regions data
 
         :return:
 
@@ -61,16 +51,7 @@ class DataSets(object):
 
     def china_prefecture_level_administrative_region(self):
         """
-        There are 293 prefecture-level cities, 7 regions, 30 autonomous prefectures,
-        and 3 leagues, totaling 333 prefecture-level divisions.
-
-        The number does not necessarily correspond exactly.
-        The data source is GADM: Global Administrative Divisions Database.
-        The data on China’s borders provided by it may not conform to China’s
-        territorial claims, and the data on provincial, city, and district boundaries
-        may not necessarily be the latest version.
-        Care must be taken when publishing images that
-        use this type of data in official journals.
+        Prefecture-level administrative regions data
 
         :return:
 
@@ -100,17 +81,7 @@ class DataSets(object):
 
     def china_county_level_administrative_region(self):
         """
-        There are 977 municipal districts, 1303 counties, 393 county-level cities,
-        120 autonomous counties, 49 banners, 3 autonomous banners, 1 special zone,
-        and 1 forest area, totaling 2,847.
-
-        The number does not necessarily correspond exactly.
-        The data source is GADM: Global Administrative Divisions Database.
-        The data on China’s borders provided by it may not conform to China’s
-        territorial claims, and the data on provincial, city, and district boundaries
-        may not necessarily be the latest version.
-        Care must be taken when publishing images that
-        use this type of data in official journals.
+        County-level administrative regions data
 
         :return:
 
