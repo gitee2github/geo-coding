@@ -11,8 +11,35 @@
 # Create: 2021-7-13
 
 import numpy as np
+from decorator import decorator
 
 __all__ = ["csys"]
+
+
+@decorator
+def parameter_check(func, ndim=2, *args, **kwargs):
+    """
+    Decorator tool to check the parameters of the input matrix
+
+    Parameters
+    ----------
+    func
+    ndim
+    args
+    kwargs
+
+    Returns
+    -------
+
+    """
+    geom, *_ = args
+
+    if not isinstance(geom, np.ndarray):
+        raise ValueError("matrix parameter is not Numpy type!")
+    if not geom.ndim == ndim:
+        raise ValueError("matrix parameter must 2-d array")
+
+    return func(*args, **kwargs)
 
 
 def _transform(matrix):
@@ -40,6 +67,7 @@ def _transform(matrix):
     ]).T
 
 
+@parameter_check(ndim=2)
 def bd09_to_gcj02(bd_matrix):
     """
     Baidu BD09 coordinates to National Bureau of Metrology and Measurement
@@ -47,10 +75,6 @@ def bd09_to_gcj02(bd_matrix):
     :param bd_matrix:
     :return:
     """
-    if not isinstance(bd_matrix, np.ndarray):
-        raise ValueError("matrix parameter is not Numpy type!")
-    if not bd_matrix.ndim == 2:
-        raise ValueError("matrix parameter must 2-d array")
     x, y, = bd_matrix[:, 0] - 0.0065, bd_matrix[:, 1] - 0.006
     z = (np.sqrt(x * x + y * y)) - (0.00002 * np.sin(y * (np.pi * 3000.0 / 180.0)))
     theta = np.arctan2(y, x) - 0.000003 * np.cos(x * (np.pi * 3000.0 / 180.0))
@@ -61,6 +85,7 @@ def bd09_to_gcj02(bd_matrix):
     ]).T
 
 
+@parameter_check(ndim=2)
 def gcj02_to_bd09(gcj_matrix):
     """
     National Bureau of Surveying and Measurement to Baidu BD09 coordinates
@@ -68,10 +93,6 @@ def gcj02_to_bd09(gcj_matrix):
     :param gcj_matrix:
     :return:
     """
-    if not isinstance(gcj_matrix, np.ndarray):
-        raise ValueError("matrix parameter is not Numpy type!")
-    if not gcj_matrix.ndim == 2:
-        raise ValueError("matrix parameter must 2-d array")
     z = np.sqrt(np.square(gcj_matrix[:, 0]) + np.square(gcj_matrix[:, 1])) + 0.00002 * np.sin(
         gcj_matrix[:, 1] * (np.pi * 3000.0 / 180.0))
     theta = np.arctan2(gcj_matrix[:, 1], gcj_matrix[:, 0]) + 0.000003 * np.cos(
@@ -83,6 +104,7 @@ def gcj02_to_bd09(gcj_matrix):
     ]).T
 
 
+@parameter_check(ndim=2)
 def gcj02_to_wgs84(gcj_matrix):
     """
     National Bureau of Survey and Measurement Coordinates to WGS-84 Coordinates
@@ -90,10 +112,6 @@ def gcj02_to_wgs84(gcj_matrix):
     :param gcj_matrix:
     :return:
     """
-    if not isinstance(gcj_matrix, np.ndarray):
-        raise ValueError("matrix parameter is not Numpy type!")
-    if not gcj_matrix.ndim == 2:
-        raise ValueError("matrix parameter must 2-d array")
     transform_gcj_matrix = _transform(
         np.array(
             [gcj_matrix[:, 0] - 105.0,
@@ -112,6 +130,7 @@ def gcj02_to_wgs84(gcj_matrix):
     ]).T
 
 
+@parameter_check(ndim=2)
 def wgs84_to_gcj02(wgs_matrix):
     """
     WGS-84 Coordinates to National Bureau of Survey and Measurement Coordinates
@@ -119,10 +138,6 @@ def wgs84_to_gcj02(wgs_matrix):
     :param wgs_matrix:
     :return:
     """
-    if not isinstance(wgs_matrix, np.ndarray):
-        raise ValueError("matrix parameter is not Numpy type!")
-    if not wgs_matrix.ndim == 2:
-        raise ValueError("matrix parameter must 2-d array")
     transform_wgs_matrix = _transform(
         np.array([
             wgs_matrix[:, 0] - 105.0,
@@ -141,6 +156,7 @@ def wgs84_to_gcj02(wgs_matrix):
     ]).T
 
 
+@parameter_check(ndim=2)
 def bd09_to_wgs84(bd_matrix):
     """
     Baidu BD09 standard to WGS-84 coordinates
@@ -148,16 +164,12 @@ def bd09_to_wgs84(bd_matrix):
     :param bd_matrix:
     :return:
     """
-    if not isinstance(bd_matrix, np.ndarray):
-        raise ValueError("matrix parameter is not Numpy type!")
-    if not bd_matrix.ndim == 2:
-        raise ValueError("matrix parameter must 2-d array")
-
     return gcj02_to_wgs84(
         bd09_to_gcj02(bd_matrix)
     )
 
 
+@parameter_check(ndim=2)
 def wgs84_to_bd09(wgs_matrix):
     """
     WGS-84 coordinates to Baidu BD09 coordinates
@@ -165,16 +177,12 @@ def wgs84_to_bd09(wgs_matrix):
     :param wgs_matrix:
     :return:
     """
-    if not isinstance(wgs_matrix, np.ndarray):
-        raise ValueError("matrix parameter is not Numpy type!")
-    if not wgs_matrix.ndim == 2:
-        raise ValueError("matrix parameter must 2-d array")
-
     return gcj02_to_bd09(
         wgs84_to_gcj02(wgs_matrix)
     )
 
 
+@parameter_check(ndim=2)
 def wgs84_to_mercator(wgs_matrix):
     """
     WGS-84 coordinates to Mercator coordinates
@@ -182,17 +190,13 @@ def wgs84_to_mercator(wgs_matrix):
     :param wgs_matrix:
     :return:
     """
-    if not isinstance(wgs_matrix, np.ndarray):
-        raise ValueError("matrix parameter is not Numpy type!")
-    if not wgs_matrix.ndim == 2:
-        raise ValueError("matrix parameter must 2-d array")
-
     return np.array([
         wgs_matrix[:, 0] * 20037508.342789 / 180.0,
         np.log(np.tan((90.0 + wgs_matrix[:, 1]) * np.pi / 360.0)) / (np.pi / 180.0) * 20037508.34789 / 180.0
     ]).T
 
 
+@parameter_check(ndim=2)
 def mercator_to_wgs84(mer_matrix):
     """
     Mercator coordinates WGS-84 coordinates
@@ -200,17 +204,13 @@ def mercator_to_wgs84(mer_matrix):
     :param mer_matrix:
     :return:
     """
-    if not isinstance(mer_matrix, np.ndarray):
-        raise ValueError("matrix parameter is not Numpy type!")
-    if not mer_matrix.ndim == 2:
-        raise ValueError("matrix parameter must 2-d array")
-
     return np.array([
         mer_matrix[:, 0] / 20037508.34789 * 180.0,
         180.0 / np.pi * (2 * np.arctan(np.exp(mer_matrix[:, 1] / 20037508.34789 * 180.0 * np.pi / 180.0)) - np.pi / 2.0)
     ]).T
 
 
+@parameter_check(ndim=2)
 def bd09_to_mercator(bd_matrix):
     """
     Baidu BD09 coordinates to Mercator coordinates
@@ -218,16 +218,12 @@ def bd09_to_mercator(bd_matrix):
     :param bd_matrix:
     :return:
     """
-    if not isinstance(bd_matrix, np.ndarray):
-        raise ValueError("matrix parameter is not Numpy type!")
-    if not bd_matrix.ndim == 2:
-        raise ValueError("matrix parameter must 2-d array")
-
     return wgs84_to_mercator(
         bd09_to_wgs84(bd_matrix)
     )
 
 
+@parameter_check(ndim=2)
 def mercator_to_bd09(mer_matrix):
     """
     Mercator coordinates Baidu BD09 coordinates
@@ -235,16 +231,12 @@ def mercator_to_bd09(mer_matrix):
     :param mer_matrix:
     :return:
     """
-    if not isinstance(mer_matrix, np.ndarray):
-        raise ValueError("matrix parameter is not Numpy type!")
-    if not mer_matrix.ndim == 2:
-        raise ValueError("matrix parameter must 2-d array")
-
     return wgs84_to_bd09(
         mercator_to_wgs84(mer_matrix)
     )
 
 
+@parameter_check(ndim=2)
 def gcj02_to_mercator(gcj_matrix):
     """
     National Bureau of Survey and Measurement coordinates to Mercator coordinates
@@ -252,16 +244,12 @@ def gcj02_to_mercator(gcj_matrix):
     :param gcj_matrix:
     :return:
     """
-    if not isinstance(gcj_matrix, np.ndarray):
-        raise ValueError("matrix parameter is not Numpy type!")
-    if not gcj_matrix.ndim == 2:
-        raise ValueError("matrix parameter must 2-d array")
-
     return wgs84_to_mercator(
         gcj02_to_wgs84(gcj_matrix)
     )
 
 
+@parameter_check(ndim=2)
 def mercator_to_gcj02(mer_matrix):
     """
     Mercator coordinates to National Bureau of Survey and Measurement coordinates
@@ -269,10 +257,6 @@ def mercator_to_gcj02(mer_matrix):
     :param mer_matrix:
     :return:
     """
-    if not isinstance(mer_matrix, np.ndarray):
-        raise ValueError("matrix parameter is not Numpy type!")
-    if not mer_matrix.ndim == 2:
-        raise ValueError("matrix parameter must 2-d array")
     return wgs84_to_gcj02(
         mercator_to_wgs84(mer_matrix)
     )
