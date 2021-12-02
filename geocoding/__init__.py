@@ -17,3 +17,4 @@ __version__ = '0.0.1'
 from .csys import *
 from .datasets import *
 from .units import *
+from .distances import *
