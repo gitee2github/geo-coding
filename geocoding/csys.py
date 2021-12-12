@@ -11,35 +11,9 @@
 # Create: 2021-7-13
 
 import numpy as np
-from decorator import decorator
+from .utils import parameter_check
 
 __all__ = ["csys"]
-
-
-@decorator
-def parameter_check(func, ndim=2, *args, **kwargs):
-    """
-    Decorator tool to check the parameters of the input matrix
-
-    Parameters
-    ----------
-    func
-    ndim
-    args
-    kwargs
-
-    Returns
-    -------
-
-    """
-    geom, *_ = args
-
-    if not isinstance(geom, np.ndarray):
-        raise ValueError("matrix parameter is not Numpy type!")
-    if not geom.ndim == ndim:
-        raise ValueError("matrix parameter must 2-d array")
-
-    return func(*args, **kwargs)
 
 
 def _transform(matrix):
