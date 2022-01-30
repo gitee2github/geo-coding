@@ -18,17 +18,40 @@ class TestDistances(object):
     def test_geo_distance(self):
         for metric in ("euclidean", "manhattan", "chebyshev", "cosine"):
             for unit in ("km", "m"):
-                dist = geocoding.distances.geo_distance(
-                    origins=[
-                        [12956625.454742264, 4852490.997620595],
-                        [12932999.198054729, 4856454.854034764]
-                    ],
-                    destinations=[
-                        [13512293.128253603, 3654686.554857535],
-                        [13512293.128253603, 3654686.554857535]
-                    ],
-                    unit=unit,
-                    metric=metric,
-                    digit=0
-                )
-                print(f"{metric}-{unit}: {dist}")
+                for type_ in ("wgs84", "bd09", "gcj02"):
+                    dist = geocoding.distances.geo_distance(
+                        origins=[[116.403963, 39.915119], [116.403963, 39.915119]],
+                        destinations=[[116.191704, 39.942046], [121.394202, 31.172559]],
+                        unit=unit,
+                        metric=metric,
+                        type_=type_,
+                        digit=0
+                    )
+                    print(f"{metric}-{unit}-{type_}: {dist}")
+
+    def test_trip_distance(self):
+        import itertools
+
+        is_duration = is_timestamp = (True, False)
+        units = ("km", "m")
+        duration_units = ("h", "m", "s")
+
+        for rd, rt, u, du in itertools.product(
+                is_duration,
+                is_timestamp,
+                units,
+                duration_units
+        ):
+            dist, *args = geocoding.distances.trip_distance(
+                origins=[[116.403963, 39.915119], [116.403963, 39.915119]],
+                destinations=[[116.191704, 39.942046], [121.394202, 31.172559]],
+                return_duration=rd,
+                return_timestamp=rt,
+                digit=2,
+                unit=u,
+                duration_unit=du,
+                aks=["k936lbWYFPwG1LEoKb9faZ8MEizFwh60"]
+            )
+            print(
+                f"condition: {(rd, rt, u, du)}, distance: {dist}, duration/timestamp: {args}"
+            )

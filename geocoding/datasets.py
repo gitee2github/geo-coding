@@ -17,6 +17,9 @@ __all__ = ["datasets"]
 
 
 class DataSets(object):
+    """
+    Collect datasets about geographic coordinates
+    """
     def __init__(self):
         self.CURRENT_PATH = os.path.join(os.path.dirname(__file__), "libs")
 
@@ -109,6 +112,75 @@ class DataSets(object):
         return pd.read_hdf(
             os.path.join(self.CURRENT_PATH, "CHINA_ADMINISTRATIVE_REGION.h5"),
             key="COUNTY"
+        )
+
+    def china_higher_education_college(self):
+        """
+        China Higher Education College List Data
+
+        :return:
+            <class 'pandas.core.frame.DataFrame'>
+            Int64Index: 1469 entries, 0 to 1468
+            Data columns (total 16 columns):
+             #   Column         Non-Null Count  Dtype
+            ---  ------         --------------  -----
+             0   ID             1469 non-null   int64
+             1   NAME           1469 non-null   object
+             2   LEVEL          1469 non-null   object
+             3   TYPE           1469 non-null   object
+             4   NATURE_NAME    1469 non-null   object
+             5   ADDRESS        1469 non-null   object
+             6   PHONE          1469 non-null   object
+             7   WEBSITE        1469 non-null   object
+             8   IP             1469 non-null   object
+             9   ISP            1314 non-null   object
+             10  SERVER         1314 non-null   object
+             11  HTTP_PROTOCOL  1314 non-null   object
+             12  IS_STATE       1314 non-null   object
+             13  IS_SSL         1314 non-null   object
+             14  SSL_ISSUER     1314 non-null   object
+             15  LAT_LNG        1314 non-null   object
+            dtypes: int64(1), object(15)
+            memory usage: 195.1+ KB
+        """
+        return pd.read_hdf(
+            os.path.join(self.CURRENT_PATH, "CHINA_HIGHER_EDUCATION_INSTITUTIONS.h5"),
+            key="college"
+        )
+
+    def china_higher_education_university(self):
+        """
+        China Higher Education University List Data
+
+        :return:
+            <class 'pandas.core.frame.DataFrame'>
+            Int64Index: 1360 entries, 0 to 1359
+            Data columns (total 16 columns):
+             #   Column         Non-Null Count  Dtype
+            ---  ------         --------------  -----
+             0   ID             1360 non-null   int64
+             1   NAME           1360 non-null   object
+             2   LEVEL          1360 non-null   object
+             3   TYPE           1360 non-null   object
+             4   NATURE_NAME    1360 non-null   object
+             5   ADDRESS        1360 non-null   object
+             6   PHONE          1360 non-null   object
+             7   WEBSITE        1360 non-null   object
+             8   IP             1360 non-null   object
+             9   ISP            1187 non-null   object
+             10  SERVER         1187 non-null   object
+             11  HTTP_PROTOCOL  1187 non-null   object
+             12  IS_STATE       1187 non-null   object
+             13  IS_SSL         1187 non-null   object
+             14  SSL_ISSUER     1187 non-null   object
+             15  LAT_LNG        1187 non-null   object
+            dtypes: int64(1), object(15)
+            memory usage: 180.6+ KB
+
+        """
+        return pd.read_hdf(
+            os.path.join(self.CURRENT_PATH, "CHINA_HIGHER_EDUCATION_INSTITUTIONS.h5"),
+            key="university"
         )
 
 

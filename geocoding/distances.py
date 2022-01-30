@@ -11,8 +11,10 @@
 # Create: 2021-7-13
 
 import numpy as np
-from .utils import parameter_check
+import time
+from .utils import parameter_check, RequestsRetrying
 from . import units
+from . import csys
 
 __all__ = ["distances"]
 
@@ -109,6 +111,56 @@ def cosine(origins, destinations):
     ])
 
 
+@parameter_check(ndim=2)
+def driving_distance(origins, destinations, aks, tactics=11):
+    """
+    Calculate road distance and travel time from two points
+
+    Parameters
+    ----------
+    origins
+    destinations
+    aks
+    tactics  
+        =10 do not take high speed; 
+        = 11 conventional route; 
+        = 12 distance is shorter; 
+        = 13 distance is shorter
+
+    Returns
+    -------
+
+    """
+    BAIDU_DRIVING_BASE_API = "http://api.map.baidu.com/routematrix/v2/driving?output=json"
+    requestsRetrying = RequestsRetrying()
+    dists, durations, timestamps = [], [], []
+    for o, d in zip(origins, destinations):
+        dist, duration, timestamp = None, None, None
+        for ak in aks:
+            url = BAIDU_DRIVING_BASE_API + f"&origins={o[1]},{o[0]}&destinations={d[1]},{d[0]}&tactics={tactics}&ak={ak}"
+            try:
+                response = requestsRetrying.get_retrying(url=url, timeout=2)
+                if response.get("status") != 0:
+                    raise ValueError
+            except AssertionError as e:
+                response = {}
+
+            if response:
+                dist = response["result"][0]["distance"]["value"]
+                duration = response["result"][0]["duration"]["value"]
+                timestamp = int(time.time())
+                break
+        dists.append(dist)
+        durations.append(duration)
+        timestamps.append(timestamp)
+
+    return (
+        np.array(dists, dtype=np.float),
+        np.array(durations, dtype=np.float),
+        timestamps
+    )
+
+
 class Distances(object):
     def __init__(self):
         self.GEO_FUNCTIONS = {
@@ -132,10 +184,15 @@ class Distances(object):
             "m": units.minutes,
             "s": units.seconds,
         }
+        self.TRIP_FUNCTIONS = {
+            "driving": driving_distance
+        }
+        self.BAIDU_AKS = ["k936lbWYFPwG1LEoKb9faZ8MEizFwh60"]
 
     def geo_distance(self,
                      origins: list,
                      destinations: list,
+                     type_: str = "bd09",
                      metric: str = "euclidean",
                      unit: str = "m",
                      digit: int = None,
@@ -148,6 +205,7 @@ class Distances(object):
         metric
         destinations
         unit
+        type_
         digit
 
         Returns
@@ -168,9 +226,22 @@ class Distances(object):
                 f"unit parameter is must str type and only support "
                 f"{'/'.join(list(self.DISTANCE_UNITS.keys()))}!"
             )
-
-        origins = np.array(origins, dtype=np.float)
-        destinations = np.array(destinations, dtype=np.float)
+        origins = np.array(
+            csys.convert(
+                geom=origins,
+                base=type_,
+                target="mercator"
+            ),
+            dtype=np.float
+        )
+        destinations = np.array(
+            csys.convert(
+                geom=destinations,
+                base=type_,
+                target="mercator"
+            ),
+            dtype=np.float
+        )
 
         dists = self.DISTANCE_UNITS[unit](
             meters=self.GEO_FUNCTIONS[metric](origins, destinations)
@@ -180,6 +251,80 @@ class Distances(object):
             dists = np.round(dists, digit)
 
         return np.where((np.isinf(dists) | np.isnan(dists)), None, dists).tolist()
+
+    def trip_distance(self,
+                      origins: list,
+                      destinations: list,
+                      metric: str = "driving",
+                      digit: int = None,
+                      return_duration: bool = False,
+                      return_timestamp: bool = False,
+                      unit: str = "m",
+                      duration_unit: str = "s",
+                      **kwargs
+                      ):
+        """
+
+        Parameters
+        ----------
+        origins
+        destinations
+        metric
+        digit
+        return_duration
+        return_timestamp
+        unit
+        duration_unit
+
+        Returns
+        -------
+
+        """
+        if not isinstance(origins, (np.ndarray, list, tuple)):
+            raise ValueError("origins parameter must be list/tuple/Numpy type!")
+        if not isinstance(destinations, (np.ndarray, list, tuple)):
+            raise ValueError("destinations parameter must be list/tuple/Numpy type!")
+        if not isinstance(metric, str) or metric not in self.TRIP_FUNCTIONS.keys():
+            raise ValueError(
+                f"metric parameter is must str type and only support "
+                f"{'/'.join(list(self.DISTANCE_UNITS.keys()))}!"
+            )
+        if not isinstance(unit, str) or unit not in self.DISTANCE_UNITS.keys():
+            raise ValueError(
+                f"unit parameter is must str type and only support "
+                f"{'/'.join(list(self.DISTANCE_UNITS.keys()))}!"
+            )
+        if not isinstance(duration_unit, str) or duration_unit not in self.TIME_UNITS.keys():
+            raise ValueError(
+                f"duration_unit parameter is must str type and only support "
+                f"{'/'.join(list(self.TIME_UNITS.keys()))}!"
+            )
+
+        origins = np.array(origins, dtype=np.float)
+        destinations = np.array(destinations, dtype=np.float)
+
+        dists, durations, times = self.TRIP_FUNCTIONS[metric](
+            origins, destinations, kwargs.get("aks", self.BAIDU_AKS)
+        )
+
+        dists = self.DISTANCE_UNITS[unit](meters=dists)
+        durations = self.TIME_UNITS[duration_unit](seconds=durations)
+
+        if isinstance(digit, int):
+            dists = np.round(dists, digit)
+            durations = np.round(durations, digit)
+
+        dists = np.where((np.isinf(dists) | np.isnan(dists)), None, dists).tolist()
+        durations = np.where((np.isinf(durations) | np.isnan(durations)), None, durations).tolist()
+
+        if return_duration and return_timestamp:
+            return dists, durations, times
+        elif not return_duration and return_timestamp:
+            return dists, times
+        elif return_duration and not return_timestamp:
+            return dists, durations
+        else:
+            return dists,
 
 
 distances = Distances()

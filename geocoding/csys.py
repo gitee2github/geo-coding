@@ -237,6 +237,9 @@ def mercator_to_gcj02(mer_matrix):
 
 
 class CoordinateSystem(object):
+    """
+    Geographic Coordinate System Conversion
+    """
     def __init__(self):
         self.FUNCTIONS = {
             ("bd09", "gcj02"): bd09_to_gcj02,
@@ -255,12 +258,34 @@ class CoordinateSystem(object):
 
     def convert(self, geom, base: str, target: str, digit: int = None):
         """
+        The data collected by each project is not necessarily consistent,
+        such as different types of coordinates:
+        geodetic latitude and longitude coordinates, plane coordinates, etc.,
+        it is also possible to use different ellipsoids (different coordinate systems)
+        or different projection methods, etc.
+        Currently, it supports the conversion between the four coordinate systems
+        of WGS-84, GCJ-02, BAIDU-09 and MERCATOR.
 
         :param digit:
         :param geom:
         :param base:
         :param target:
         :return:
+        >>> import geocoding
+        >>> geocoding.csys.convert(
+        >>>     geom=(
+        >>>         (116.403963, 39.915119),
+        >>>         (116.191704, 39.942046),
+        >>>         (121.394202, 31.172559)
+        >>>     ),
+        >>>     base="gcj02",
+        >>>     target="wgs84"
+        >>> )
+        [
+            [116.39771847975867, 39.91371471114314],
+            [116.18557724535424, 39.94077270825861],
+            [121.38955717906798, 31.17442377352464]
+        ]
         """
         if isinstance(geom, (np.ndarray, list, tuple)):
             geom = np.array(geom, dtype=np.float)
